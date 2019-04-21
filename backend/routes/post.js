@@ -8,7 +8,11 @@ const {
     deletePost,
     updatePost,
     getPhotoPost,
-    getPost
+    getPost,
+    likePost,
+    unlikePost,
+    comment,
+    deleteComment
 } = require('../controllers/post');
 const {
     createPostValidator
@@ -21,14 +25,16 @@ const {
 } = require('../controllers/user')
 
 const router = express.Router();
-
+router.put("/like", requireSignin, likePost)
+router.put("/unlike", requireSignin, unlikePost)
+router.put("/comment", requireSignin, comment)
+router.put("/deletecomment", requireSignin, deleteComment)
 router.get("/", getPosts);
-router.get("/:postId", requireSignin, getPost);
 
 router.post("/new/:userId", requireSignin, createPost, createPostValidator);
 router.get('/by/:userId', requireSignin, postsByUser)
 router.get('/photo/:postId', getPhotoPost);
-
+router.get("/:postId", requireSignin, getPost);
 router.delete("/:postId", requireSignin, isPoster, deletePost);
 router.put("/:postId", requireSignin, isPoster, updatePost)
 

@@ -6,6 +6,8 @@ const _ = require('lodash');
 exports.postById = (req, res, next, id) => {
     Post.findById(id)
         .populate('postedBy', "_id name")
+        .populate('comments.postedBy', '_id name')
+        .select("_id title content created likes comments")
         .exec((err, post) => {
             if (err || !post) {
                 return res.status(400).json({
@@ -24,7 +26,8 @@ exports.getPost = (req, res) => {
 exports.getPosts = (req, res) => {
     Post.find()
         .populate('postedBy', "_id name")
-        .select("_id title content created")
+        .populate('comments.postedBy', '_id name')
+        .select("_id title content created likes comments")
         .sort({ created: -1 })
         .then(posts => res.json(posts))
         .catch(err => res.json({ err }))
@@ -113,7 +116,6 @@ exports.deletePost = (req, res) => {
 // }
 
 exports.updatePost = (req, res) => {
-    console.log("abc")
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
     form.parse(req, (err, fields, files) => {
@@ -144,4 +146,64 @@ exports.getPhotoPost = (req, res) => {
     }
     else res.send(undefined)
 }
+
+exports.likePost = (req, res) => {
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $push: { likes: req.body.userId } },
+        { new: true }
+    )
+        .select("_id title content created likes")
+        .exec((err, data) => {
+            if (err) res.json({ err });
+            res.json(data)
+        })
+}
+
+exports.unlikePost = (req, res) => {
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $pull: { likes: req.body.userId } },
+        { new: true }
+    )
+        .select("_id title content created likes")
+        .exec((err, data) => {
+            if (err) res.json({ err });
+            res.json(data)
+        })
+}
+
+exports.comment = (req, res) => {
+    let comment = req.body.comment;
+    comment.postedBy = req.body.userId;
+
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $push: { comments: comment } },
+        { new: true }
+    )
+        .populate('comments.postedBy', '_id name')
+        .select("_id title content created likes comments")
+        .exec((err, data) => {
+            if (err) res.json({ err });
+            res.json(data)
+        })
+}
+
+exports.deleteComment = (req, res) => {
+    let comment = req.body.comment
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $pull: { comments: { _id: comment._id } } },
+        { new: true }
+    )
+        .populate('comments.postedBy', '_id name')
+        .select("_id title content created likes comments")
+        .exec((err, data) => {
+            if (err) res.json({ err });
+            res.json(data)
+        })
+}
+
+
 

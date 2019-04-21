@@ -1,13 +1,17 @@
 import React, { Component } from 'react'
 import { isAuthenticate } from '../auth'
 import DefaultAvatar from "../images/post.jpg";
-import { getPost } from './apiPost'
+import { getPost, likePost, unlikePost } from './apiPost'
 import { Link, Redirect } from 'react-router-dom'
-import DeletePost from './DeletePost'
+import DeletePost from './DeletePost';
+import Comment from './Comment'
 class SinglePost extends Component {
     state = {
         post: {},
-        redirectToSignin: false
+        redirectToSignin: false,
+        like: false,
+        likes: 0,
+        comments: []
     }
 
     componentDidMount() {
@@ -16,12 +20,32 @@ class SinglePost extends Component {
         const postId = this.props.match.params.postId;
         getPost(postId, token).then(data => {
             if (data.err) console.log(data.err);
-            this.setState({ post: data })
+            this.setState({ post: data, likes: data.likes.length, like: this.checkLike(data.likes), comments: data.comments })
         })
     }
 
+    checkLike = (data) => {
+        const userId = isAuthenticate().user._id
+        return data.indexOf(userId) > -1;
+    }
+
+    likeToggle = () => {
+        const token = isAuthenticate().token
+        const postId = this.props.match.params.postId;
+        const userId = isAuthenticate().user._id
+        let callApi = this.state.like ? unlikePost : likePost;
+        callApi(postId, token, userId).then(data => {
+            if (data.err) console.log(data.err);
+            this.setState({ like: !this.state.like, likes: data.likes.length })
+        })
+    }
+
+    updateComments = comments => {
+        this.setState({ comments: comments })
+    }
+
     render() {
-        const { post, loading, redirectToSignin } = this.state;
+        const { post, loading, likes, like, redirectToSignin, comments } = this.state;
         let photoUrl = post ? `${process.env.REACT_APP_API_URL}/post/photo/${post._id}` : DefaultAvatar;
         const posterId = post.postedBy ? post.postedBy._id : ""
         const posterName = post.postedBy ? post.postedBy.name : "Unknown"
@@ -39,6 +63,20 @@ class SinglePost extends Component {
                             alt="Card image cap" />
                         <br />
                         <br />
+
+                        {!like ? (
+                            <h3 onClick={this.likeToggle}>
+                                <i
+                                    className="fas fa-thumbs-up text-info"
+                                >{""} {likes} Like</i>
+                            </h3>
+                        ) : (
+                                <h3 onClick={this.likeToggle}>
+                                    <i
+                                        className="fas fa-thumbs-down text-danger"
+                                    >{""} {likes} Like</i>
+                                </h3>
+                            )}
                         <p className="card-text">{post.content}</p>
                         <br />
                         <p className="font-italic mark">
@@ -60,6 +98,7 @@ class SinglePost extends Component {
                             ) : ""
                         }
                     </>)}
+                <Comment postId={post._id} comments={comments} updateComments={this.updateComments} comments={comments} />
             </div>
         )
     }
