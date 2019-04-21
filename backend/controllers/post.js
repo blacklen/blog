@@ -17,20 +17,17 @@ exports.postById = (req, res, next, id) => {
         })
 }
 
+exports.getPost = (req, res) => {
+    return (res.json(req.post))
+}
+
 exports.getPosts = (req, res) => {
-    // Post.find((err,data)=>{
-    //     if(err){
-    //         res.send(err);
-    //     }
-    //     res.send(data);
-    // })
     Post.find()
         .populate('postedBy', "_id name")
-        .select("_id title content")
-        .then(posts => res.json({
-            posts
-        }))
-        .catch(err => console.log(err))
+        .select("_id title content created")
+        .sort({ created: -1 })
+        .then(posts => res.json(posts))
+        .catch(err => res.json({ err }))
 }
 
 exports.createPost = (req, res) => {
@@ -50,15 +47,13 @@ exports.createPost = (req, res) => {
             post.photo.data = fs.readFileSync(files.photo.path);
             post.photo.contentType = files.photo.type;
         }
-        post.save((err, result) => {
+        post.save((err, post) => {
             if (err) {
                 return res.status(400).json({
                     err
                 })
             }
-            res.json({
-                post: result
-            })
+            res.json(post)
         })
     })
 
@@ -105,16 +100,48 @@ exports.deletePost = (req, res) => {
 
 }
 
+// exports.updatePost = (req, res) => {
+//     let post = req.post;
+//     post = _.extend(post, req.body);
+//     post.updated = Date.now();
+//     post.save(err => {
+//         if (err) return res.status(400).json({
+//             err
+//         });
+//         res.json(post);
+//     })
+// }
+
 exports.updatePost = (req, res) => {
-    let post = req.post;
-    post = _.extend(post, req.body);
-    post.updated = Date.now();
-    post.save(err => {
-        if (err) return res.status(400).json({
-            err
-        });
-        res.json({
-            post
-        });
+    console.log("abc")
+    let form = new formidable.IncomingForm();
+    form.keepExtensions = true;
+    form.parse(req, (err, fields, files) => {
+        if (err) {
+            return res.status(400).json({
+                err: "Image could not be uploaded"
+            })
+        }
+        let post = req.post;
+        post = _.extend(post, fields);
+        post.updated = Date.now();
+        if (files.photo) {
+            post.photo.data = fs.readFileSync(files.photo.path);
+            post.photo.contentType = files.photo.type;
+        }
+        post.save()
+            .then(() => {
+                res.json(post)
+            })
+
     })
 }
+
+exports.getPhotoPost = (req, res) => {
+    if (req.post.photo.data) {
+        res.set(("Content-Type", req.post.photo.contentType));
+        return res.send(req.post.photo.data);
+    }
+    else res.send(undefined)
+}
+

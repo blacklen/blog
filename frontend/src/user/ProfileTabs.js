@@ -4,12 +4,13 @@ import DefaultAvatar from '../images/avatar.png'
 
 class ProfileTabs extends Component {
     render() {
-        const { followers, following } = this.props;
+        const { followers, following, posts } = this.props;
         return (
             <div>
                 <div className="row">
                     <div className="col-md-4">
                         <h3 className="text-primary">Followers</h3>
+                        <hr />
                         <hr />
                         {followers && followers.map(person => (
                             <div key={person._id}>
@@ -27,7 +28,7 @@ class ProfileTabs extends Component {
                                             height="40px"
                                             weight="40px"
                                         />
-                                        <h3 style={{ display: "inline" }}>{person.name}</h3>
+                                        <h3 className="lead" style={{ display: "inline" }}>{person.name}</h3>
                                     </Link>
                                 </div>
                             </div>
@@ -36,6 +37,7 @@ class ProfileTabs extends Component {
 
                     <div className="col-md-4">
                         <h3 className="text-primary">Following</h3>
+                        <hr />
                         <hr />
                         {following && following.map(person => (
                             <div key={person._id}>
@@ -54,7 +56,7 @@ class ProfileTabs extends Component {
                                                 height="40px"
                                                 weight="40px"
                                             />
-                                            <h3 style={{ display: "inline" }}>{person.name}</h3>
+                                            <h3 className="lead" style={{ display: "inline" }}>{person.name}</h3>
                                         </Link>
                                     </div>
                                 </div>
@@ -65,6 +67,14 @@ class ProfileTabs extends Component {
                     <div className="col-md-4">
                         <h3 className="text-primary">Posts</h3>
                         <hr />
+                        <hr />
+                        {posts.map(post => (
+                            <div key={post._id}>
+                                <Link to={`/post/${post._id}`}>
+                                    <p className="lead">{post.title}</p>
+                                </Link>
+                            </div>
+                        ))}
                     </div>
 
                 </div>

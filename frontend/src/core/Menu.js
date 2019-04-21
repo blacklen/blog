@@ -40,6 +40,14 @@ const Menu = ({ history }) => (
                         </Link>
                     </li>
                     <li className="nav-item">
+                        <Link
+                            className="nav-link"
+                            style={isActive(history, `/post/new`)}
+                            to={`/post/new`}>
+                            Create Post
+                        </Link>
+                    </li>
+                    <li className="nav-item">
                         <a
                             className="nav-link"
                             style={isActive(history, "/signout", { cursor: "pointer", color: "#fff" })}
