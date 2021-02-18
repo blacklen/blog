@@ -16,6 +16,8 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 
 console.log("Something");
+console.log('abc')
+console.log("Opps, forgot again!")
 
 //db
 mongoose.connect(process.env.MONGO_URL, {
