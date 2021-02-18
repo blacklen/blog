@@ -15,6 +15,8 @@ const postRoutes = require('./routes/post');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 
+console.log("Something");
+
 //db
 mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true
